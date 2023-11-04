@@ -1,5 +1,6 @@
 "use server";
 
+import { signIn } from "@/auth";
 import { sql } from "@vercel/postgres";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -124,4 +125,19 @@ export async function deleteInvoice(id: string) {
   revalidatePath("/dashboard/invoices");
 
   // このアクションは /dashboard/invoices パスで呼び出されるので、redirect を呼び出す必要はありません。revalidatePath をコールすると、新しいサーバリクエストが発生し、テーブルが再レンダリングされます。
+}
+
+//メールアドレスでの認証
+export async function authenticate(
+  prevState: string | undefined,
+  formData: FormData
+) {
+  try {
+    await signIn("credentials", Object.fromEntries(formData));
+  } catch (error) {
+    if ((error as Error).message.includes("CredentialsSignin")) {
+      return "CredentialSignin";
+    }
+    throw error;
+  }
 }
